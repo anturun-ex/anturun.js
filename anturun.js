@@ -1040,13 +1040,32 @@ window.downloadQRIS = function() {
     let nominal = window.currentQRISNominal || "0";
     let filename = "QRIS_Anturun_Rp" + nominal + ".png";
 
-    // Memicu pengunduhan paksa
-    let a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    // Konversi base64 ke blob agar lebih didukung di browser HP/Mobile
+    fetch(url)
+        .then(res => res.blob())
+        .then(blob => {
+            let blobUrl = window.URL.createObjectURL(blob);
+            let a = document.createElement("a");
+            a.style.display = "none";
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+            }, 100);
+        })
+        .catch(err => {
+            console.error("Gagal mendownload QRIS:", err);
+            // Fallback cara standar jika fetch gagal
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
 }
 
 window.tutupModalQRIS = function() {
