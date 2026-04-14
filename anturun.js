@@ -984,6 +984,8 @@ function bukaModalQRIS(nominalAkhir) {
     document.getElementById('qrisModalWrapper').classList.add('flex');
     document.getElementById('qrisTotalText').innerText = formatRp(nominalAkhir);
 
+    window.currentQRISNominal = nominalAkhir; // Menyimpan nominal untuk nama file unduhan
+
     let container = document.getElementById("qris-container");
     container.innerHTML = ""; 
 
@@ -1014,6 +1016,37 @@ function bukaModalQRIS(nominalAkhir) {
     } catch (err) {
         container.innerHTML = '<span class="text-xs text-red-500 text-center">Gagal memproses QRIS. Pastikan string QRIS valid.</span>';
     }
+}
+
+window.downloadQRIS = function() {
+    let container = document.getElementById("qris-container");
+    if (!container) return;
+
+    let canvas = container.querySelector("canvas");
+    let img = container.querySelector("img");
+    let url = "";
+
+    // Pustaka qrcode.js biasanya merender canvas atau tag image base64
+    if (img && img.src && img.src.startsWith("data:image")) {
+        url = img.src;
+    } else if (canvas) {
+        url = canvas.toDataURL("image/png");
+    } else {
+        alert("QRIS belum dimuat sepenuhnya. Silakan tunggu sebentar.");
+        return;
+    }
+
+    // Penamaan file yang dinamis dengan jumlah tagihan
+    let nominal = window.currentQRISNominal || "0";
+    let filename = "QRIS_Anturun_Rp" + nominal + ".png";
+
+    // Memicu pengunduhan paksa
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 window.tutupModalQRIS = function() {
